@@ -44,6 +44,9 @@ function cleanName(rawName) {
   // Remove PhD variants (Ph.D., PhD, Ph.D, PHD, etc.)
   name = name.replace(/\b(Ph\.?D\.?|PHD)\b/gi, '').trim();
 
+  // Remove DR/Dr./dr. variants
+  name = name.replace(/\b(DR\.?|Dr\.?|dr\.?)\b/gi, '').trim();
+
   // Remove other common suffixes/titles
   name = name.replace(/\b(Jr\.?|Sr\.?|II|III|IV|Esq\.?|M\.?D\.?|DDS|DVM)\b/gi, '').trim();
 
