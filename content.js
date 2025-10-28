@@ -12,6 +12,49 @@ let isObserving = false;
 const AUTO_SCRAPE_DELAY = 1000; // Wait 1 second for initial page load
 const DEBOUNCE_DELAY = 500; // Debounce delay for DOM changes
 
+// Clean name by removing titles and credentials
+function cleanName(rawName) {
+  if (!rawName) return null;
+
+  let name = rawName.trim();
+
+  // Remove everything after comma (titles like ", MBA", ", CPA", etc.)
+  if (name.includes(',')) {
+    name = name.split(',')[0].trim();
+  }
+
+  // Remove PhD variants (Ph.D., PhD, Ph.D, PHD, etc.)
+  name = name.replace(/\b(Ph\.?D\.?|PHD)\b/gi, '').trim();
+
+  // Remove other common suffixes/titles
+  name = name.replace(/\b(Jr\.?|Sr\.?|II|III|IV|Esq\.?|M\.?D\.?|DDS|DVM)\b/gi, '').trim();
+
+  // Clean up multiple spaces
+  name = name.replace(/\s+/g, ' ').trim();
+
+  return name;
+}
+
+// Validate name - check if last name is valid
+function isValidName(name) {
+  if (!name) return false;
+
+  const parts = name.trim().split(/\s+/);
+
+  // Need at least 2 parts (first and last name)
+  if (parts.length < 2) return false;
+
+  // Get last name (last part)
+  const lastName = parts[parts.length - 1];
+
+  // Check if last name is just one character followed by a dot (e.g., "M.")
+  if (/^[A-Za-z]\.?$/.test(lastName)) {
+    return false;
+  }
+
+  return true;
+}
+
 // Function to scrape visible people cards
 function scrapeCurrentView() {
   // LinkedIn uses different selectors, we'll try multiple patterns
@@ -42,7 +85,13 @@ function scrapeCurrentView() {
                         element.querySelector('.artdeco-entity-lockup__title');
 
       if (nameElement) {
-        name = nameElement.textContent.trim();
+        const rawName = nameElement.textContent.trim();
+        name = cleanName(rawName);
+      }
+
+      // Validate name before proceeding
+      if (!isValidName(name)) {
+        return; // Skip this person
       }
 
       // Extract position

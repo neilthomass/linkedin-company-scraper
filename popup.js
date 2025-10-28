@@ -116,12 +116,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   function exportToCSV(data) {
     if (data.length === 0) return;
 
-    const headers = ['Name', 'Position', 'Profile URL'];
-    const rows = data.map(person => [
-      person.name,
-      person.position || '',
-      person.profileUrl || ''
-    ]);
+    // Split name into first and last name
+    function splitName(fullName) {
+      if (!fullName) return { firstName: '', lastName: '' };
+
+      const parts = fullName.trim().split(/\s+/);
+
+      if (parts.length === 0) {
+        return { firstName: '', lastName: '' };
+      } else if (parts.length === 1) {
+        return { firstName: parts[0], lastName: '' };
+      } else if (parts.length === 2) {
+        // Two words: first is first name, second is last name
+        return { firstName: parts[0], lastName: parts[1] };
+      } else {
+        // Three or more words: everything except last word is first name, last word is last name
+        const lastName = parts[parts.length - 1];
+        const firstName = parts.slice(0, -1).join(' ');
+        return { firstName, lastName };
+      }
+    }
+
+    const headers = ['First Name', 'Last Name', 'Position', 'Profile URL'];
+    const rows = data.map(person => {
+      const { firstName, lastName } = splitName(person.name);
+      return [
+        firstName,
+        lastName,
+        person.position || '',
+        person.profileUrl || ''
+      ];
+    });
 
     const csvContent = [
       headers.join(','),
