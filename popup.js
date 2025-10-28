@@ -95,6 +95,27 @@ document.addEventListener('DOMContentLoaded', async () => {
       toggleBtn.disabled = true;
 
       try {
+        // Clear previously scraped data
+        scrapedData = [];
+        await chrome.storage.local.set({ scrapedData: [] });
+        updateUI();
+        console.log('Cleared previously scraped data from storage');
+
+        // Auto-detect and set company name from LinkedIn URL
+        if (tab.url.includes('linkedin.com/company/')) {
+          const urlMatch = tab.url.match(/linkedin\.com\/company\/([^\/]+)/);
+          if (urlMatch && urlMatch[1]) {
+            // Convert company slug to readable name (replace dashes with spaces, capitalize)
+            const companySlug = urlMatch[1];
+            const readableName = companySlug
+              .split('-')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+            companyNameInput.value = readableName;
+            await chrome.storage.local.set({ companyName: readableName });
+          }
+        }
+
         // Ensure content script is injected
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
@@ -201,8 +222,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     function generateEmail(firstName, lastName, format) {
       if (!format) return '';
 
+      // Get first initial
+      const firstInitial = firstName ? firstName.charAt(0).toLowerCase() : '';
+
       // Convert to lowercase and replace placeholders
       const email = format
+        .replace(/first_initial/gi, firstInitial)
         .replace(/first/gi, firstName.toLowerCase())
         .replace(/last/gi, lastName.toLowerCase());
 

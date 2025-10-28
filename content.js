@@ -44,11 +44,14 @@ function cleanName(rawName) {
   // Remove PhD variants (Ph.D., PhD, Ph.D, PHD, etc.)
   name = name.replace(/\b(Ph\.?D\.?|PHD)\b/gi, '').trim();
 
-  // Remove DR/Dr./dr. variants
-  name = name.replace(/\b(DR\.?|Dr\.?|dr\.?)\b/gi, '').trim();
+  // Remove DR/Dr./dr. variants (with word boundary to avoid partial matches)
+  name = name.replace(/\b(DR|Dr|dr)\.?\s*/gi, '').trim();
 
   // Remove other common suffixes/titles
   name = name.replace(/\b(Jr\.?|Sr\.?|II|III|IV|Esq\.?|M\.?D\.?|DDS|DVM)\b/gi, '').trim();
+
+  // Remove standalone periods at the beginning
+  name = name.replace(/^\.+\s*/, '').trim();
 
   // Clean up multiple spaces
   name = name.replace(/\s+/g, ' ').trim();
@@ -316,6 +319,9 @@ function stopContinuousMonitoring() {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'startMonitoring') {
     console.log('Starting monitoring from user action...');
+    // Clear previously scraped data
+    scrapedPeople.clear();
+    console.log('Cleared previously scraped data');
     startContinuousMonitoring();
     sendResponse({ success: true });
     return true;

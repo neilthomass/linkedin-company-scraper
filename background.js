@@ -3,6 +3,44 @@
 // Listen for extension installation
 chrome.runtime.onInstalled.addListener(() => {
   console.log('LinkedIn People Scraper installed');
+
+  // Disable the extension icon by default
+  chrome.action.disable();
+
+  // Set up rules to enable the icon only on LinkedIn pages
+  chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
+    chrome.declarativeContent.onPageChanged.addRules([
+      {
+        conditions: [
+          new chrome.declarativeContent.PageStateMatcher({
+            pageUrl: { hostEquals: 'www.linkedin.com' }
+          })
+        ],
+        actions: [new chrome.declarativeContent.ShowAction()]
+      }
+    ]);
+  });
+});
+
+// Also update icon state when tabs change
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && tab.url) {
+    if (tab.url.includes('linkedin.com')) {
+      chrome.action.enable(tabId);
+    } else {
+      chrome.action.disable(tabId);
+    }
+  }
+});
+
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  chrome.tabs.get(activeInfo.tabId, (tab) => {
+    if (tab.url && tab.url.includes('linkedin.com')) {
+      chrome.action.enable(activeInfo.tabId);
+    } else {
+      chrome.action.disable(activeInfo.tabId);
+    }
+  });
 });
 
 // Listen for messages from popup or content scripts
