@@ -3,7 +3,6 @@ let scrapedData = [];
 document.addEventListener('DOMContentLoaded', async () => {
   const toggleBtn = document.getElementById('toggleBtn');
   const exportBtn = document.getElementById('exportBtn');
-  const statusEl = document.getElementById('status');
   const countEl = document.getElementById('count');
   const resultsListEl = document.getElementById('results-list');
   const companyNameInput = document.getElementById('companyName');
@@ -22,11 +21,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     isScrapingActive = true;
     toggleBtn.textContent = 'Stop Auto-Scraping';
     toggleBtn.className = 'btn-danger';
-    statusEl.textContent = 'Auto-scraping in progress...';
-    statusEl.style.color = '#0a66c2';
-  } else {
-    statusEl.textContent = 'Click "Start Auto-Scraping" to begin';
-    statusEl.style.color = '#666';
   }
 
   // Load saved company name
@@ -58,6 +52,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (isValidPage) {
     toggleBtn.disabled = false;
+    if (!stored.isScrapingActive) {
+      toggleBtn.textContent = 'Start Auto-Scraping';
+    }
 
     // Auto-detect company name from LinkedIn URL
     if (tab.url.includes('linkedin.com/company/')) {
@@ -74,9 +71,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   } else {
-    statusEl.textContent = 'Please navigate to a LinkedIn company "People" page or example page.html';
-    statusEl.style.color = '#cc0000';
     toggleBtn.disabled = true;
+    toggleBtn.textContent = 'Navigate to a Company\'s People Page';
   }
 
   // Listen for storage changes (when content script saves data)
@@ -97,10 +93,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!isScrapingActive) {
       // Start scraping
       toggleBtn.disabled = true;
-      statusEl.textContent = 'Starting auto-scraping...';
-      statusEl.style.color = '#0a66c2';
 
       try {
+        // Ensure content script is injected
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        }).catch(() => {
+          // Content script may already be injected, ignore error
+        });
+
+        // Wait a moment for script to load
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         const response = await chrome.tabs.sendMessage(tab.id, {
           action: 'startMonitoring'
         });
@@ -110,23 +115,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           await chrome.storage.local.set({ isScrapingActive: true });
           toggleBtn.textContent = 'Stop Auto-Scraping';
           toggleBtn.className = 'btn-danger';
-          statusEl.textContent = 'Auto-scraping in progress...';
-          statusEl.style.color = '#0a66c2';
-        } else {
-          statusEl.textContent = 'Error starting auto-scraping';
-          statusEl.style.color = '#cc0000';
         }
       } catch (error) {
-        statusEl.textContent = 'Error: ' + error.message;
-        statusEl.style.color = '#cc0000';
+        console.error('Error starting:', error);
       }
 
       toggleBtn.disabled = false;
     } else {
       // Stop scraping
       toggleBtn.disabled = true;
-      statusEl.textContent = 'Stopping auto-scraping...';
-      statusEl.style.color = '#cc0000';
 
       try {
         const response = await chrome.tabs.sendMessage(tab.id, {
@@ -138,15 +135,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           await chrome.storage.local.set({ isScrapingActive: false });
           toggleBtn.textContent = 'Start Auto-Scraping';
           toggleBtn.className = 'btn-primary';
-          statusEl.textContent = 'Auto-scraping stopped. Data preserved.';
-          statusEl.style.color = '#666';
-        } else {
-          statusEl.textContent = 'Error stopping auto-scraping';
-          statusEl.style.color = '#cc0000';
         }
       } catch (error) {
-        statusEl.textContent = 'Error: ' + error.message;
-        statusEl.style.color = '#cc0000';
+        console.error('Error stopping:', error);
       }
 
       toggleBtn.disabled = false;

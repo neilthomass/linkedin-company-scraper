@@ -60,6 +60,11 @@ function cleanName(rawName) {
 function isValidName(name) {
   if (!name) return false;
 
+  // Reject if name contains "linkedin" (case-insensitive)
+  if (/linkedin/i.test(name)) {
+    return false;
+  }
+
   const parts = name.trim().split(/\s+/);
 
   // Need at least 2 parts (first and last name)
