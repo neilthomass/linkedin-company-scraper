@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "LinkedIn People Scraper",
   "version": "1.0.0",
-  "description": "Scrape employee names and positions from LinkedIn company pages",
+  "description": "Automatically extract employee contact data from LinkedIn company pages with CSV export",
   "permissions": [
     "activeTab",
     "storage",
