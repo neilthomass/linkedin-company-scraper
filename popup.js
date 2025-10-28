@@ -8,9 +8,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const resultsListEl = document.getElementById('results-list');
   const autoScrollCheckbox = document.getElementById('autoScroll');
   const scrollDelayInput = document.getElementById('scrollDelay');
+  const emailFormatInput = document.getElementById('emailFormat');
 
   // Load saved data from storage
-  const stored = await chrome.storage.local.get(['scrapedData']);
+  const stored = await chrome.storage.local.get(['scrapedData', 'emailFormat']);
   if (stored.scrapedData && stored.scrapedData.length > 0) {
     scrapedData = stored.scrapedData;
     updateUI();
@@ -20,6 +21,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     statusEl.textContent = 'Waiting for auto-scrape to complete...';
     statusEl.style.color = '#666';
   }
+
+  // Load saved email format
+  if (stored.emailFormat) {
+    emailFormatInput.value = stored.emailFormat;
+  }
+
+  // Save email format when changed
+  emailFormatInput.addEventListener('change', async () => {
+    await chrome.storage.local.set({ emailFormat: emailFormatInput.value });
+  });
 
   // Check if current tab is a matching page
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -84,7 +95,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   exportBtn.addEventListener('click', () => {
-    exportToCSV(scrapedData);
+    const emailFormat = emailFormatInput.value.trim();
+    exportToCSV(scrapedData, emailFormat);
   });
 
   function updateUI() {
@@ -113,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function exportToCSV(data) {
+  function exportToCSV(data, emailFormat) {
     if (data.length === 0) return;
 
     // Split name into first and last name
@@ -134,13 +146,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    const headers = ['First Name', 'Last Name', 'Position', 'Profile URL'];
+    // Generate email from format
+    function generateEmail(firstName, lastName, format) {
+      if (!format) return '';
+
+      // Convert to lowercase and replace placeholders
+      const email = format
+        .replace(/first/gi, firstName.toLowerCase())
+        .replace(/last/gi, lastName.toLowerCase());
+
+      return email;
+    }
+
+    const headers = ['First Name', 'Last Name', 'Email', 'Position', 'Profile URL'];
     const rows = data
       .map(person => {
         const { firstName, lastName } = splitName(person.name);
         return {
           firstName,
           lastName,
+          email: generateEmail(firstName, lastName, emailFormat),
           position: person.position || '',
           profileUrl: person.profileUrl || ''
         };
@@ -149,6 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       .map(row => [
         row.firstName,
         row.lastName,
+        row.email,
         row.position,
         row.profileUrl
       ]);
