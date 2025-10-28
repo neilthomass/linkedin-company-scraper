@@ -40,13 +40,17 @@ h2 {
 }
 
 .controls {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-bottom: 15px;
 }
 
+.controls #exportBtn {
+  grid-column: 1 / -1;
+}
+
 button {
-  flex: 1;
   padding: 10px 16px;
   border: none;
   border-radius: 16px;
@@ -66,6 +70,20 @@ button {
 }
 
 .btn-primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background: #cc0000;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #990000;
+}
+
+.btn-danger:disabled {
   background: #ccc;
   cursor: not-allowed;
 }

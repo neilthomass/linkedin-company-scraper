@@ -2,16 +2,16 @@ let scrapedData = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   const scrapeBtn = document.getElementById('scrapeBtn');
+  const stopBtn = document.getElementById('stopBtn');
   const exportBtn = document.getElementById('exportBtn');
   const statusEl = document.getElementById('status');
   const countEl = document.getElementById('count');
   const resultsListEl = document.getElementById('results-list');
-  const autoScrollCheckbox = document.getElementById('autoScroll');
-  const scrollDelayInput = document.getElementById('scrollDelay');
+  const companyNameInput = document.getElementById('companyName');
   const emailFormatInput = document.getElementById('emailFormat');
 
   // Load saved data from storage
-  const stored = await chrome.storage.local.get(['scrapedData', 'emailFormat']);
+  const stored = await chrome.storage.local.get(['scrapedData', 'emailFormat', 'companyName']);
   if (stored.scrapedData && stored.scrapedData.length > 0) {
     scrapedData = stored.scrapedData;
     updateUI();
@@ -22,10 +22,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     statusEl.style.color = '#666';
   }
 
+  // Load saved company name
+  if (stored.companyName) {
+    companyNameInput.value = stored.companyName;
+  }
+
   // Load saved email format
   if (stored.emailFormat) {
     emailFormatInput.value = stored.emailFormat;
   }
+
+  // Save company name when changed
+  companyNameInput.addEventListener('change', async () => {
+    await chrome.storage.local.set({ companyName: companyNameInput.value });
+  });
 
   // Save email format when changed
   emailFormatInput.addEventListener('change', async () => {
@@ -41,6 +51,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (isValidPage) {
     scrapeBtn.disabled = false;
+
+    // Auto-detect company name from LinkedIn URL
+    if (tab.url.includes('linkedin.com/company/')) {
+      const urlMatch = tab.url.match(/linkedin\.com\/company\/([^\/]+)/);
+      if (urlMatch && urlMatch[1] && !companyNameInput.value) {
+        // Convert company slug to readable name (replace dashes with spaces, capitalize)
+        const companySlug = urlMatch[1];
+        const readableName = companySlug
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+        companyNameInput.value = readableName;
+        await chrome.storage.local.set({ companyName: readableName });
+      }
+    }
   } else {
     statusEl.textContent = 'Please navigate to a LinkedIn company "People" page or example page.html';
     statusEl.style.color = '#cc0000';
@@ -65,15 +90,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     statusEl.style.color = '#0a66c2';
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const autoScroll = autoScrollCheckbox.checked;
-    const scrollDelay = parseInt(scrollDelayInput.value, 10);
 
     try {
       // Send message to start scraping
       const response = await chrome.tabs.sendMessage(tab.id, {
-        action: 'startScraping',
-        autoScroll,
-        scrollDelay
+        action: 'startScraping'
       });
 
       if (response.success) {
@@ -94,9 +115,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     scrapeBtn.disabled = false;
   });
 
+  stopBtn.addEventListener('click', async () => {
+    stopBtn.disabled = true;
+    statusEl.textContent = 'Stopping auto-scraping...';
+    statusEl.style.color = '#cc0000';
+
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    try {
+      const response = await chrome.tabs.sendMessage(tab.id, {
+        action: 'stopMonitoring'
+      });
+
+      if (response.success) {
+        statusEl.textContent = 'Auto-scraping stopped. Current data preserved.';
+        statusEl.style.color = '#666';
+      } else {
+        statusEl.textContent = 'Error stopping auto-scraping';
+        statusEl.style.color = '#cc0000';
+      }
+    } catch (error) {
+      statusEl.textContent = 'Error: ' + error.message;
+      statusEl.style.color = '#cc0000';
+    }
+
+    stopBtn.disabled = false;
+  });
+
   exportBtn.addEventListener('click', () => {
     const emailFormat = emailFormatInput.value.trim();
-    exportToCSV(scrapedData, emailFormat);
+    const companyName = companyNameInput.value.trim();
+    exportToCSV(scrapedData, emailFormat, companyName);
   });
 
   function updateUI() {
@@ -125,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function exportToCSV(data, emailFormat) {
+  function exportToCSV(data, emailFormat, companyName) {
     if (data.length === 0) return;
 
     // Split name into first and last name
@@ -158,25 +207,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       return email;
     }
 
-    const headers = ['First Name', 'Last Name', 'Email', 'Position', 'Profile URL'];
+    // Column order: First, Last, Position, LinkedIn, Email, Company
+    const headers = ['First', 'Last', 'Position', 'LinkedIn', 'Email', 'Company'];
     const rows = data
       .map(person => {
         const { firstName, lastName } = splitName(person.name);
         return {
           firstName,
           lastName,
-          email: generateEmail(firstName, lastName, emailFormat),
           position: person.position || '',
-          profileUrl: person.profileUrl || ''
+          profileUrl: person.profileUrl || '',
+          email: generateEmail(firstName, lastName, emailFormat),
+          company: companyName || ''
         };
       })
       .filter(row => row.firstName && row.lastName) // Skip if first or last name is empty
       .map(row => [
         row.firstName,
         row.lastName,
-        row.email,
         row.position,
-        row.profileUrl
+        row.profileUrl,
+        row.email,
+        row.company
       ]);
 
     const csvContent = [
@@ -184,11 +236,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       ...rows.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(','))
     ].join('\n');
 
+    // Generate filename: company date time.csv
+    const now = new Date();
+    const date = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const time = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
+    const safeCompanyName = companyName ? companyName.replace(/[^a-z0-9]/gi, '_') : 'Company';
+    const filename = `${safeCompanyName} ${date} ${time}.csv`;
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `linkedin_people_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
   }
