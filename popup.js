@@ -126,27 +126,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         return { firstName: '', lastName: '' };
       } else if (parts.length === 1) {
         return { firstName: parts[0], lastName: '' };
-      } else if (parts.length === 2) {
-        // Two words: first is first name, second is last name
-        return { firstName: parts[0], lastName: parts[1] };
       } else {
-        // Three or more words: everything except last word is first name, last word is last name
+        // First word is first name, last word is last name
+        const firstName = parts[0];
         const lastName = parts[parts.length - 1];
-        const firstName = parts.slice(0, -1).join(' ');
         return { firstName, lastName };
       }
     }
 
     const headers = ['First Name', 'Last Name', 'Position', 'Profile URL'];
-    const rows = data.map(person => {
-      const { firstName, lastName } = splitName(person.name);
-      return [
-        firstName,
-        lastName,
-        person.position || '',
-        person.profileUrl || ''
-      ];
-    });
+    const rows = data
+      .map(person => {
+        const { firstName, lastName } = splitName(person.name);
+        return {
+          firstName,
+          lastName,
+          position: person.position || '',
+          profileUrl: person.profileUrl || ''
+        };
+      })
+      .filter(row => row.firstName && row.lastName) // Skip if first or last name is empty
+      .map(row => [
+        row.firstName,
+        row.lastName,
+        row.position,
+        row.profileUrl
+      ]);
 
     const csvContent = [
       headers.join(','),

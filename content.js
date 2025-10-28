@@ -7,16 +7,34 @@ console.log('LinkedIn People Scraper: Content script loaded');
 const scrapedPeople = new Map(); // Use Map to avoid duplicates
 let observer = null;
 let isObserving = false;
+let autoClickInterval = null;
 
 // Settings
 const AUTO_SCRAPE_DELAY = 1000; // Wait 1 second for initial page load
 const DEBOUNCE_DELAY = 500; // Debounce delay for DOM changes
+const AUTO_CLICK_INTERVAL = 3000; // Try to click "Show more" every 3 seconds
 
 // Clean name by removing titles and credentials
 function cleanName(rawName) {
   if (!rawName) return null;
 
   let name = rawName.trim();
+
+  // Remove emojis (comprehensive Unicode emoji ranges)
+  name = name.replace(/[\u{1F600}-\u{1F64F}]/gu, ''); // Emoticons
+  name = name.replace(/[\u{1F300}-\u{1F5FF}]/gu, ''); // Misc Symbols and Pictographs
+  name = name.replace(/[\u{1F680}-\u{1F6FF}]/gu, ''); // Transport and Map
+  name = name.replace(/[\u{1F1E0}-\u{1F1FF}]/gu, ''); // Flags
+  name = name.replace(/[\u{2600}-\u{26FF}]/gu, '');   // Misc symbols
+  name = name.replace(/[\u{2700}-\u{27BF}]/gu, '');   // Dingbats
+  name = name.replace(/[\u{1F900}-\u{1F9FF}]/gu, ''); // Supplemental Symbols and Pictographs
+  name = name.replace(/[\u{1FA00}-\u{1FA6F}]/gu, ''); // Chess Symbols
+  name = name.replace(/[\u{1FA70}-\u{1FAFF}]/gu, ''); // Symbols and Pictographs Extended-A
+  name = name.replace(/[\u{FE00}-\u{FE0F}]/gu, '');   // Variation Selectors
+  name = name.replace(/[\u{200D}]/gu, '');            // Zero Width Joiner
+
+  // Remove parentheses and everything inside them
+  name = name.replace(/\([^)]*\)/g, '').trim();
 
   // Remove everything after comma (titles like ", MBA", ", CPA", etc.)
   if (name.includes(',')) {
@@ -163,6 +181,37 @@ function debouncedScrape() {
   }, DEBOUNCE_DELAY);
 }
 
+// Auto-click "Show more results" button
+function autoClickShowMore() {
+  // Try different selectors for "Show more" buttons
+  const buttonSelectors = [
+    'button:contains("Show more")',
+    'button:contains("show more")',
+    '.scaffold-finite-scroll__load-button',
+    'button[aria-label*="more"]',
+    'button.artdeco-button--secondary',
+    '.load-more button',
+    'button' // Fallback: find any button with "show" or "more" in text
+  ];
+
+  // Custom contains selector
+  const buttons = Array.from(document.querySelectorAll('button'));
+  const showMoreButton = buttons.find(btn => {
+    const text = btn.textContent.toLowerCase();
+    return text.includes('show') && text.includes('more') ||
+           text.includes('load') && text.includes('more') ||
+           text.includes('see') && text.includes('more');
+  });
+
+  if (showMoreButton && showMoreButton.offsetParent !== null) {
+    console.log('Clicking "Show more results" button...');
+    showMoreButton.click();
+    return true;
+  }
+
+  return false;
+}
+
 // Set up continuous monitoring with MutationObserver
 function startContinuousMonitoring() {
   if (isObserving) return;
@@ -172,6 +221,11 @@ function startContinuousMonitoring() {
   // Initial scrape
   const initialCount = scrapeCurrentView();
   console.log(`Initial scrape: Found ${initialCount} people`);
+
+  // Try to auto-click "Show more" button after initial scrape
+  setTimeout(() => {
+    autoClickShowMore();
+  }, 1000);
 
   // Find the container to observe
   const container = document.querySelector('.scaffold-finite-scroll__content') ||
@@ -197,6 +251,11 @@ function startContinuousMonitoring() {
 
     if (hasNewContent) {
       debouncedScrape();
+
+      // Try to click "Show more" button after new content loads
+      setTimeout(() => {
+        autoClickShowMore();
+      }, 1000);
     }
   });
 
@@ -208,6 +267,25 @@ function startContinuousMonitoring() {
 
   isObserving = true;
   console.log('Continuous monitoring active');
+
+  // Set up periodic auto-click for "Show more" button (every 3 seconds)
+  function scheduleNextClick() {
+    if (autoClickInterval) {
+      clearTimeout(autoClickInterval);
+    }
+
+    autoClickInterval = setTimeout(() => {
+      const clicked = autoClickShowMore();
+      if (clicked) {
+        console.log('Button clicked, scheduling next attempt...');
+      }
+      // Schedule next click regardless of whether button was found
+      scheduleNextClick();
+    }, AUTO_CLICK_INTERVAL);
+  }
+
+  scheduleNextClick();
+  console.log('Auto-click scheduler started (3 second intervals)');
 }
 
 // Stop monitoring
@@ -216,6 +294,12 @@ function stopContinuousMonitoring() {
     observer.disconnect();
     observer = null;
   }
+
+  if (autoClickInterval) {
+    clearTimeout(autoClickInterval);
+    autoClickInterval = null;
+  }
+
   isObserving = false;
   console.log('Continuous monitoring stopped');
 }

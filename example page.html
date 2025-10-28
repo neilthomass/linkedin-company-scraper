@@ -332,36 +332,69 @@
     </ul>
 
     <div class="load-more">
-      <button onclick="alert('This is a demo page. Infinite scroll would load more results on a real LinkedIn page.')">
+      <button id="showMoreBtn">
         Show more results
       </button>
     </div>
   </div>
 
   <script>
-    // Simulate infinite scroll behavior for testing
-    let scrollCount = 0;
-    window.addEventListener('scroll', () => {
-      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
-        if (scrollCount < 2) {
-          addMorePeople();
-          scrollCount++;
-        }
-      }
-    });
+    let clickCount = 0;
+    const maxClicks = 5; // Allow 5 clicks to load more people
+
+    // Data pools for different batches
+    const batches = [
+      [
+        { name: "Patricia Harris 🚀, MBA", title: "Frontend Developer", url: "patricia-harris" },
+        { name: "Daniel Kim Ph.D. 👨‍💻", title: "Backend Developer", url: "daniel-kim" },
+        { name: "Rachel Anderson 😊", title: "Scrum Master", url: "rachel-anderson" },
+        { name: "Andrew Moore 💼, CPA", title: "Solutions Architect", url: "andrew-moore" },
+        { name: "Michelle Jackson ✨", title: "Content Strategist", url: "michelle-jackson" }
+      ],
+      [
+        { name: "Brian K.", title: "UI Designer", url: "brian-k" },
+        { name: "Laura Stevens PhD", title: "Research Scientist", url: "laura-stevens" },
+        { name: "Carlos Martinez", title: "Cloud Architect", url: "carlos-martinez" },
+        { name: "Angela White, MBA", title: "Operations Manager", url: "angela-white" },
+        { name: "Kevin J.", title: "Data Engineer", url: "kevin-j" }
+      ],
+      [
+        { name: "Samantha Lee 🎨", title: "Product Designer", url: "samantha-lee" },
+        { name: "Marcus T. ⚙️", title: "DevOps Lead", url: "marcus-t" },
+        { name: "Diana Prince Rogers 👑", title: "Chief Technology Officer", url: "diana-prince-rogers" },
+        { name: "Timothy Brown 🤖, Ph.D.", title: "Machine Learning Engineer", url: "timothy-brown" },
+        { name: "Rebecca Nelson 📊", title: "Project Manager", url: "rebecca-nelson" }
+      ],
+      [
+        { name: "George Washington Adams (He/Him)", title: "Senior Consultant", url: "george-adams" },
+        { name: "Helen M.", title: "Business Analyst", url: "helen-m" },
+        { name: "Victor Chang (Hiring), MBA", title: "Finance Director", url: "victor-chang" },
+        { name: "Olivia Parker (She/Her)", title: "Content Writer", url: "olivia-parker" },
+        { name: "Nathan Scott", title: "Sales Manager", url: "nathan-scott" }
+      ],
+      [
+        { name: "Isabella Garcia Martinez (They/Them)", title: "Marketing Director", url: "isabella-garcia" },
+        { name: "Ryan Cooper PhD (Open to Work)", title: "Data Scientist", url: "ryan-cooper" },
+        { name: "Sophia Turner (Pronouns: She/Her)", title: "UX Researcher", url: "sophia-turner" },
+        { name: "Jack D.", title: "Software Tester", url: "jack-d" },
+        { name: "Emma Wilson (CFA), CFA", title: "Investment Analyst", url: "emma-wilson" }
+      ]
+    ];
 
     function addMorePeople() {
-      const names = [
-        { name: "Patricia Harris", title: "Frontend Developer", url: "patricia-harris" },
-        { name: "Daniel Kim", title: "Backend Developer", url: "daniel-kim" },
-        { name: "Rachel Anderson", title: "Scrum Master", url: "rachel-anderson" },
-        { name: "Andrew Moore", title: "Solutions Architect", url: "andrew-moore" },
-        { name: "Michelle Jackson", title: "Content Strategist", url: "michelle-jackson" }
-      ];
+      if (clickCount >= maxClicks) {
+        const btn = document.getElementById('showMoreBtn');
+        btn.textContent = 'No more results';
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+        return;
+      }
 
+      const batch = batches[clickCount];
       const list = document.querySelector('.scaffold-finite-scroll__content');
 
-      names.forEach(person => {
+      batch.forEach(person => {
         const initials = person.name.split(' ').map(n => n[0]).join('');
         const li = document.createElement('li');
         li.innerHTML = `
@@ -378,7 +411,25 @@
         `;
         list.appendChild(li);
       });
+
+      clickCount++;
+
+      // Update button text
+      const btn = document.getElementById('showMoreBtn');
+      if (clickCount >= maxClicks) {
+        btn.textContent = 'No more results';
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+      } else {
+        btn.textContent = `Show more results (${maxClicks - clickCount} left)`;
+      }
+
+      console.log(`Loaded batch ${clickCount}/${maxClicks}`);
     }
+
+    // Button click handler
+    document.getElementById('showMoreBtn').addEventListener('click', addMorePeople);
   </script>
 </body>
 </html>
