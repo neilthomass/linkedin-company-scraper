@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Example Company - People | LinkedIn</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #f3f2ef;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    h1 {
+      color: #000;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .scaffold-finite-scroll__content {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .scaffold-finite-scroll__content li {
+      margin-bottom: 16px;
+    }
+
+    .org-people-profile-card {
+      display: flex;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .org-people-profile-card:hover {
+      background: #f9f9f9;
+    }
+
+    .profile-photo {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #0a66c2;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 600;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .artdeco-entity-lockup {
+      flex: 1;
+    }
+
+    .artdeco-entity-lockup__title {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #000;
+    }
+
+    .artdeco-entity-lockup__title a {
+      color: #0a66c2;
+      text-decoration: none;
+    }
+
+    .artdeco-entity-lockup__title a:hover {
+      text-decoration: underline;
+    }
+
+    .artdeco-entity-lockup__subtitle {
+      margin: 0 0 4px 0;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    .artdeco-entity-lockup__caption {
+      margin: 0;
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    .load-more {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .load-more button {
+      background: #0a66c2;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .load-more button:hover {
+      background: #004182;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>People at Example Company</h1>
+
+    <ul class="scaffold-finite-scroll__content">
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">JS</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/john-smith" data-anonymize="person-name">John Smith</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Chief Executive Officer</div>
+            <div class="artdeco-entity-lockup__caption">San Francisco, California</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">SJ</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/sarah-johnson" data-anonymize="person-name">Sarah Johnson</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Vice President of Engineering</div>
+            <div class="artdeco-entity-lockup__caption">New York, New York</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">MC</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/michael-chen" data-anonymize="person-name">Michael Chen</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Senior Software Engineer</div>
+            <div class="artdeco-entity-lockup__caption">Seattle, Washington</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">ED</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/emily-davis" data-anonymize="person-name">Emily Davis</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Product Manager</div>
+            <div class="artdeco-entity-lockup__caption">Austin, Texas</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">RP</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/robert-patel" data-anonymize="person-name">Robert Patel</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Head of Design</div>
+            <div class="artdeco-entity-lockup__caption">Los Angeles, California</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">JW</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/jennifer-wilson" data-anonymize="person-name">Jennifer Wilson</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Chief Marketing Officer</div>
+            <div class="artdeco-entity-lockup__caption">Chicago, Illinois</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">DL</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/david-lee" data-anonymize="person-name">David Lee</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Senior Data Scientist</div>
+            <div class="artdeco-entity-lockup__caption">Boston, Massachusetts</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">AM</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/amanda-martinez" data-anonymize="person-name">Amanda Martinez</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Director of Sales</div>
+            <div class="artdeco-entity-lockup__caption">Miami, Florida</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">KT</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/kevin-thompson" data-anonymize="person-name">Kevin Thompson</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Software Engineer</div>
+            <div class="artdeco-entity-lockup__caption">Portland, Oregon</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">LG</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/lisa-garcia" data-anonymize="person-name">Lisa Garcia</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">UX Researcher</div>
+            <div class="artdeco-entity-lockup__caption">Denver, Colorado</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">JB</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/james-brown" data-anonymize="person-name">James Brown</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">DevOps Engineer</div>
+            <div class="artdeco-entity-lockup__caption">Atlanta, Georgia</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">MR</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/maria-rodriguez" data-anonymize="person-name">Maria Rodriguez</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Business Analyst</div>
+            <div class="artdeco-entity-lockup__caption">Dallas, Texas</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">CN</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/christopher-nguyen" data-anonymize="person-name">Christopher Nguyen</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Quality Assurance Lead</div>
+            <div class="artdeco-entity-lockup__caption">Phoenix, Arizona</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">NT</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/nancy-taylor" data-anonymize="person-name">Nancy Taylor</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">HR Manager</div>
+            <div class="artdeco-entity-lockup__caption">Philadelphia, Pennsylvania</div>
+          </div>
+        </div>
+      </li>
+
+      <li>
+        <div class="org-people-profile-card">
+          <div class="profile-photo">TW</div>
+          <div class="artdeco-entity-lockup">
+            <h3 class="artdeco-entity-lockup__title">
+              <a href="https://www.linkedin.com/in/thomas-white" data-anonymize="person-name">Thomas White</a>
+            </h3>
+            <div class="artdeco-entity-lockup__subtitle">Security Engineer</div>
+            <div class="artdeco-entity-lockup__caption">San Diego, California</div>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="load-more">
+      <button onclick="alert('This is a demo page. Infinite scroll would load more results on a real LinkedIn page.')">
+        Show more results
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Simulate infinite scroll behavior for testing
+    let scrollCount = 0;
+    window.addEventListener('scroll', () => {
+      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+        if (scrollCount < 2) {
+          addMorePeople();
+          scrollCount++;
+        }
+      }
+    });
+
+    function addMorePeople() {
+      const names = [
+        { name: "Patricia Harris", title: "Frontend Developer", url: "patricia-harris" },
+        { name: "Daniel Kim", title: "Backend Developer", url: "daniel-kim" },
+        { name: "Rachel Anderson", title: "Scrum Master", url: "rachel-anderson" },
+        { name: "Andrew Moore", title: "Solutions Architect", url: "andrew-moore" },
+        { name: "Michelle Jackson", title: "Content Strategist", url: "michelle-jackson" }
+      ];
+
+      const list = document.querySelector('.scaffold-finite-scroll__content');
+
+      names.forEach(person => {
+        const initials = person.name.split(' ').map(n => n[0]).join('');
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="org-people-profile-card">
+            <div class="profile-photo">${initials}</div>
+            <div class="artdeco-entity-lockup">
+              <h3 class="artdeco-entity-lockup__title">
+                <a href="https://www.linkedin.com/in/${person.url}" data-anonymize="person-name">${person.name}</a>
+              </h3>
+              <div class="artdeco-entity-lockup__subtitle">${person.title}</div>
+              <div class="artdeco-entity-lockup__caption">Remote</div>
+            </div>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>

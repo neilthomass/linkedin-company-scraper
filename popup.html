@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>LinkedIn People Scraper</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>LinkedIn People Scraper</h1>
+
+    <div class="status-section">
+      <p id="status">Navigate to a LinkedIn company's "People" page to start scraping.</p>
+    </div>
+
+    <div class="controls">
+      <button id="scrapeBtn" class="btn-primary">Start Scraping</button>
+      <button id="exportBtn" class="btn-secondary" disabled>Export CSV</button>
+    </div>
+
+    <div class="results-section">
+      <h2>Results</h2>
+      <div id="stats">
+        <span>Scraped: <strong id="count">0</strong> people</span>
+      </div>
+
+      <div id="results-list" class="results-container"></div>
+    </div>
+
+    <div class="options">
+      <label>
+        <input type="checkbox" id="autoScroll" checked>
+        Auto-scroll to load more results
+      </label>
+      <label>
+        Scroll delay (ms):
+        <input type="number" id="scrollDelay" value="2000" min="500" max="5000" step="100">
+      </label>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
