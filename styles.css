@@ -40,14 +40,10 @@ h2 {
 }
 
 .controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-bottom: 15px;
-}
-
-.controls #exportBtn {
-  grid-column: 1 / -1;
 }
 
 button {

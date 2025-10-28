@@ -309,17 +309,10 @@ function stopContinuousMonitoring() {
 
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'startScraping') {
-    // Manual scrape
-    const count = scrapeCurrentView();
-    const data = Array.from(scrapedPeople.values());
-    sendResponse({ success: true, data });
-    return true;
-  }
-
-  if (request.action === 'getData') {
-    const data = Array.from(scrapedPeople.values());
-    sendResponse({ success: true, data });
+  if (request.action === 'startMonitoring') {
+    console.log('Starting monitoring from user action...');
+    startContinuousMonitoring();
+    sendResponse({ success: true });
     return true;
   }
 
@@ -328,13 +321,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ success: true });
     return true;
   }
+
+  if (request.action === 'getData') {
+    const data = Array.from(scrapedPeople.values());
+    sendResponse({ success: true, data });
+    return true;
+  }
 });
 
-// AUTO-START: Begin continuous monitoring after page loads
-setTimeout(() => {
-  console.log('Auto-starting continuous scraper...');
-  startContinuousMonitoring();
-}, AUTO_SCRAPE_DELAY);
+// DO NOT auto-start - wait for user to click Start button
+console.log('Content script ready. Click "Start Auto-Scraping" to begin.');
 
 // Also scrape on scroll events (for infinite scroll pages)
 let scrollTimer = null;

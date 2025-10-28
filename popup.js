@@ -1,8 +1,7 @@
 let scrapedData = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const scrapeBtn = document.getElementById('scrapeBtn');
-  const stopBtn = document.getElementById('stopBtn');
+  const toggleBtn = document.getElementById('toggleBtn');
   const exportBtn = document.getElementById('exportBtn');
   const statusEl = document.getElementById('status');
   const countEl = document.getElementById('count');
@@ -10,15 +9,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   const companyNameInput = document.getElementById('companyName');
   const emailFormatInput = document.getElementById('emailFormat');
 
+  let isScrapingActive = false;
+
   // Load saved data from storage
-  const stored = await chrome.storage.local.get(['scrapedData', 'emailFormat', 'companyName']);
+  const stored = await chrome.storage.local.get(['scrapedData', 'emailFormat', 'companyName', 'isScrapingActive']);
   if (stored.scrapedData && stored.scrapedData.length > 0) {
     scrapedData = stored.scrapedData;
     updateUI();
-    statusEl.textContent = `Auto-scraped ${scrapedData.length} people!`;
-    statusEl.style.color = '#057642';
+  }
+
+  if (stored.isScrapingActive) {
+    isScrapingActive = true;
+    toggleBtn.textContent = 'Stop Auto-Scraping';
+    toggleBtn.className = 'btn-danger';
+    statusEl.textContent = 'Auto-scraping in progress...';
+    statusEl.style.color = '#0a66c2';
   } else {
-    statusEl.textContent = 'Waiting for auto-scrape to complete...';
+    statusEl.textContent = 'Click "Start Auto-Scraping" to begin';
     statusEl.style.color = '#666';
   }
 
@@ -50,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   );
 
   if (isValidPage) {
-    scrapeBtn.disabled = false;
+    toggleBtn.disabled = false;
 
     // Auto-detect company name from LinkedIn URL
     if (tab.url.includes('linkedin.com/company/')) {
@@ -69,7 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } else {
     statusEl.textContent = 'Please navigate to a LinkedIn company "People" page or example page.html';
     statusEl.style.color = '#cc0000';
-    scrapeBtn.disabled = true;
+    toggleBtn.disabled = true;
   }
 
   // Listen for storage changes (when content script saves data)
@@ -84,62 +91,66 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  scrapeBtn.addEventListener('click', async () => {
-    scrapeBtn.disabled = true;
-    statusEl.textContent = 'Manual scraping in progress...';
-    statusEl.style.color = '#0a66c2';
-
+  toggleBtn.addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-    try {
-      // Send message to start scraping
-      const response = await chrome.tabs.sendMessage(tab.id, {
-        action: 'startScraping'
-      });
+    if (!isScrapingActive) {
+      // Start scraping
+      toggleBtn.disabled = true;
+      statusEl.textContent = 'Starting auto-scraping...';
+      statusEl.style.color = '#0a66c2';
 
-      if (response.success) {
-        scrapedData = response.data;
-        await chrome.storage.local.set({ scrapedData });
-        updateUI();
-        statusEl.textContent = `Manual scraping complete! Found ${scrapedData.length} people.`;
-        statusEl.style.color = '#057642';
-      } else {
-        statusEl.textContent = 'Error: ' + (response.error || 'Unknown error');
+      try {
+        const response = await chrome.tabs.sendMessage(tab.id, {
+          action: 'startMonitoring'
+        });
+
+        if (response && response.success) {
+          isScrapingActive = true;
+          await chrome.storage.local.set({ isScrapingActive: true });
+          toggleBtn.textContent = 'Stop Auto-Scraping';
+          toggleBtn.className = 'btn-danger';
+          statusEl.textContent = 'Auto-scraping in progress...';
+          statusEl.style.color = '#0a66c2';
+        } else {
+          statusEl.textContent = 'Error starting auto-scraping';
+          statusEl.style.color = '#cc0000';
+        }
+      } catch (error) {
+        statusEl.textContent = 'Error: ' + error.message;
         statusEl.style.color = '#cc0000';
       }
-    } catch (error) {
-      statusEl.textContent = 'Error: ' + error.message;
+
+      toggleBtn.disabled = false;
+    } else {
+      // Stop scraping
+      toggleBtn.disabled = true;
+      statusEl.textContent = 'Stopping auto-scraping...';
       statusEl.style.color = '#cc0000';
-    }
 
-    scrapeBtn.disabled = false;
-  });
+      try {
+        const response = await chrome.tabs.sendMessage(tab.id, {
+          action: 'stopMonitoring'
+        });
 
-  stopBtn.addEventListener('click', async () => {
-    stopBtn.disabled = true;
-    statusEl.textContent = 'Stopping auto-scraping...';
-    statusEl.style.color = '#cc0000';
-
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-    try {
-      const response = await chrome.tabs.sendMessage(tab.id, {
-        action: 'stopMonitoring'
-      });
-
-      if (response.success) {
-        statusEl.textContent = 'Auto-scraping stopped. Current data preserved.';
-        statusEl.style.color = '#666';
-      } else {
-        statusEl.textContent = 'Error stopping auto-scraping';
+        if (response && response.success) {
+          isScrapingActive = false;
+          await chrome.storage.local.set({ isScrapingActive: false });
+          toggleBtn.textContent = 'Start Auto-Scraping';
+          toggleBtn.className = 'btn-primary';
+          statusEl.textContent = 'Auto-scraping stopped. Data preserved.';
+          statusEl.style.color = '#666';
+        } else {
+          statusEl.textContent = 'Error stopping auto-scraping';
+          statusEl.style.color = '#cc0000';
+        }
+      } catch (error) {
+        statusEl.textContent = 'Error: ' + error.message;
         statusEl.style.color = '#cc0000';
       }
-    } catch (error) {
-      statusEl.textContent = 'Error: ' + error.message;
-      statusEl.style.color = '#cc0000';
-    }
 
-    stopBtn.disabled = false;
+      toggleBtn.disabled = false;
+    }
   });
 
   exportBtn.addEventListener('click', () => {

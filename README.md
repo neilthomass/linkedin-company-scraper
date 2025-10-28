@@ -12,9 +12,11 @@ Chrome extension for scraping employee data from LinkedIn company pages.
 ## Usage
 
 1. Navigate to `https://www.linkedin.com/company/{company-name}/people/`
-2. Extension auto-scrapes after 1 second
-3. Auto-clicks "Show more" every 3 seconds
-4. Click extension icon > "Export CSV"
+2. Click extension icon
+3. Click "Start Auto-Scraping" button
+4. Extension scrapes continuously and auto-clicks "Show more" every 3 seconds
+5. Click "Stop Auto-Scraping" to stop (data is preserved)
+6. Click "Export CSV" to download
 
 ## Name Cleaning
 
