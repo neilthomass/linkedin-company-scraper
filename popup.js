@@ -222,12 +222,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     function generateEmail(firstName, lastName, format) {
       if (!format) return '';
 
-      // Get first initial
+      // Get first and last initials
       const firstInitial = firstName ? firstName.charAt(0).toLowerCase() : '';
+      const lastInitial = lastName ? lastName.charAt(0).toLowerCase() : '';
 
       // Convert to lowercase and replace placeholders
       const email = format
         .replace(/first_initial/gi, firstInitial)
+        .replace(/last_initial/gi, lastInitial)
         .replace(/first/gi, firstName.toLowerCase())
         .replace(/last/gi, lastName.toLowerCase());
 
