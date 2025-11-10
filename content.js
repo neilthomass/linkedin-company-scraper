@@ -3,8 +3,19 @@
 
 console.log('LinkedIn People Scraper: Content script loaded');
 
+// Prevent double injection
+if (window.linkedinScraperInjected) {
+  console.log('Content script already injected, skipping...');
+} else {
+  window.linkedinScraperInjected = true;
+}
+
 // Global state
-const scrapedPeople = new Map(); // Use Map to avoid duplicates
+if (!window.scrapedPeople) {
+  window.scrapedPeople = new Map(); // Use Map to avoid duplicates
+}
+const scrapedPeople = window.scrapedPeople;
+
 let observer = null;
 let isObserving = false;
 let autoClickInterval = null;

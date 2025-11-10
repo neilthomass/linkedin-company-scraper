@@ -80,10 +80,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (namespace === 'local' && changes.scrapedData) {
       scrapedData = changes.scrapedData.newValue || [];
       updateUI();
-      if (scrapedData.length > 0) {
-        statusEl.textContent = `Auto-scraped ${scrapedData.length} people!`;
-        statusEl.style.color = '#057642';
-      }
     }
   });
 
